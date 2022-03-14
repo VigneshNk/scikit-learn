@@ -310,8 +310,49 @@ class ParameterSampler:
                     UserWarning,
                 )
                 n_iter = grid_size
-            for i in sample_without_replacement(grid_size, n_iter, random_state=rng):
-                yield param_grid[i]
+
+            # dictionary to store param grid intervals
+            memo_cache = {}
+
+            for _ in range(n_iter):
+                num_params = len(self.param_distributions)
+
+                # randomly choose a param with uniform probability
+                param_index = rng.randint(1, num_params + 1)
+
+                # get start grid index from memoization
+                if param_index - 1 in memo_cache:
+                    param_grid_start = memo_cache[param_index - 1]
+                
+                # calculate the number of possible combinations for the start grid index
+                else:
+                    if param_index - 1 == 0:
+                        param_grid_start = 0
+                    else:
+                        param_grid_start = 1
+                        for key in self.param_distributions[param_index - 2]:
+                            param_grid_start *= len(self.param_distributions[param_index - 2].get(key))
+                    
+                    # add grid start index to memoization cache
+                    memo_cache[param_index - 1] = param_grid_start
+                
+                # get end grid index from memoization
+                if param_index in memo_cache:
+                    param_grid_end = memo_cache[param_index]
+                
+                # calculate the number of possible combinations for the end grid index
+                else:
+                    param_grid_end = 1
+                    for key in self.param_distributions[param_index - 1]:
+                        param_grid_end *= len(self.param_distributions[param_index - 1].get(key))
+                    param_grid_end += param_grid_start
+                    
+                    # add grid end index to memoization cache
+                    memo_cache[param_index] = param_grid_end
+
+                # randomly select a combination from param_grid 
+                index = rng.randint(param_grid_start, param_grid_end)
+                yield param_grid[index]
 
         else:
             for _ in range(self.n_iter):
