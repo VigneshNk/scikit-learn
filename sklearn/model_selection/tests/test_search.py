@@ -367,7 +367,92 @@ def test_trivial_cv_results_attr():
     random_search.fit(X, y)
     assert hasattr(grid_search, "cv_results_")
 
+def test_params_distribution_spread():
+    mock_clf = MockClassifier()
+    params1, params2 = {}, {}
 
+    # size 60 vs. size 20
+    param1_hits, params1_min, params1_max = 0, 1, 60
+    params1['foo_param'] = [x for x in range(params1_min, params1_max)]
+
+    param2_hits, params2_min, params2_max = 0, 100, 120
+    params2['foo_param'] = [x for x in range(params2_min, params2_max)]
+
+    params_both = [params1, params2]
+
+    for _x in range(0, 100):
+        rand = RandomizedSearchCV(mock_clf, params_both, cv=3, n_iter=50)
+        rand.fit(X, y)
+
+        assert hasattr(rand, "cv_results_")
+        results = rand.cv_results_['param_foo_param']
+
+        param1_count = len([x for x in results if x >= params1_min and x <= params1_max])
+        param2_count = len([x for x in results if x >= params2_min and x <= params2_max])
+        if param1_count > param2_count: 
+            param1_hits += 1
+        else:
+            param2_hits += 1
+
+    # difference in hits should never be more than 25
+    assert abs(param1_hits - param2_hits) < 25
+
+def test_params_distribution_even():
+    mock_clf = MockClassifier()
+    params1, params2 = {}, {}
+
+    # size 10 vs. size 10
+    param1_hits, params1_min, params1_max = 0, 1, 10
+    params1['foo_param'] = [x for x in range(params1_min, params1_max)]
+
+    param2_hits, params2_min, params2_max = 0, 11, 20
+    params2['foo_param'] = [x for x in range(params2_min, params2_max)]
+
+    params_both = [params1, params2]
+
+    for _x in range(0, 100):
+        rand = RandomizedSearchCV(mock_clf, params_both, cv=3, n_iter=50)
+        rand.fit(X, y)
+
+        assert hasattr(rand, "cv_results_")
+        results = rand.cv_results_['param_foo_param']
+
+        param1_count = len([x for x in results if x >= params1_min and x <= params1_max])
+        param2_count = len([x for x in results if x >= params2_min and x <= params2_max])
+        if param1_count > param2_count: 
+            param1_hits += 1
+        else:
+            param2_hits += 1
+
+    # difference in hits should never be more than 25
+    assert abs(param1_hits - param2_hits) < 25
+
+def test_params_distribution_empty():
+    mock_clf = MockClassifier()
+    params1, params2 = {}, {}
+
+    # size 10 vs. size 10
+    param1_hits, params1_min, params1_max = 0, 1, 10
+    params1['foo_param'] = [x for x in range(params1_min, params1_max)]
+
+    param2_hits, params2_min, params2_max = 0, 11, 20
+    params2['foo_param'] = [x for x in range(params2_min, params2_max)]
+
+    params_both = [params1, params2]
+
+    for _x in range(0, 100):
+        rand = RandomizedSearchCV(mock_clf, params_both, cv=3, n_iter=50)
+        rand.fit(X, y)
+
+        assert hasattr(rand, "cv_results_")
+        results = rand.cv_results_['param_foo_param']
+        param1_count = len([x for x in results if x >= params1_min and x <= params1_max])
+        param2_count = len([x for x in results if x >= params2_min and x <= params2_max])
+        if param1_count == 0 or param2_count == 0:
+            assert False
+
+    assert True
+    
 def test_no_refit():
     # Test that GSCV can be used for model selection alone without refitting
     clf = MockClassifier()
