@@ -34,3 +34,5 @@ def compute_friedman_h_statistic(data, target):
     plt.matshow(h_statistic.squeeze())
     plt.colorbar()
     plt.waitforbuttonpress(0)
+
+    return h_statistic
