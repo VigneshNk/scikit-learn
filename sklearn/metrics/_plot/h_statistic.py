@@ -30,9 +30,11 @@ def compute_friedman_h_statistic(data, target):
         denominator = ((x_y_partial_dependence - target.mean()) ** 2)
         h_statistic[x, y] = numerator.sum() / denominator.sum()
 
+    return h_statistic
+
+
+def plot_h_statistic(h_statistic):
     # generate a colour bar for the computed h statistic
     plt.matshow(h_statistic.squeeze())
     plt.colorbar()
     plt.waitforbuttonpress(0)
-
-    return h_statistic
