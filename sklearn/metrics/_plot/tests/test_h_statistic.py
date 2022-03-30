@@ -6,7 +6,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.datasets import load_iris
 
 from sklearn.metrics._plot.h_statistic import compute_friedman_h_statistic
-
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils._testing import ignore_warnings
 
 
@@ -16,7 +16,8 @@ def test_h_statistic_size():
     for func in data:
         with ignore_warnings():
             csv_data = func()
-            h_statistic = compute_friedman_h_statistic(csv_data.data, csv_data.target)
+            clf = RandomForestRegressor(n_estimators=10).fit(csv_data.data, csv_data.target)
+            h_statistic = compute_friedman_h_statistic(csv_data.data, csv_data.target, clf)
 
         array_size = len(h_statistic)
         for row in h_statistic:
@@ -32,7 +33,8 @@ def test_h_statistic_non_zeros():
     for func in data:
         with ignore_warnings():
             csv_data = func()
-            h_statistic = compute_friedman_h_statistic(csv_data.data, csv_data.target)
+            clf = RandomForestRegressor(n_estimators=10).fit(csv_data.data, csv_data.target)
+            h_statistic = compute_friedman_h_statistic(csv_data.data, csv_data.target, clf)
         
         for i in range(len(h_statistic)):
             for j in range(i + 1, len(h_statistic)):
@@ -48,7 +50,8 @@ def test_h_statistic_zeros():
     for func in data:
         with ignore_warnings():
             csv_data = func()
-            h_statistic = compute_friedman_h_statistic(csv_data.data, csv_data.target)
+            clf = RandomForestRegressor(n_estimators=10).fit(csv_data.data, csv_data.target)
+            h_statistic = compute_friedman_h_statistic(csv_data.data, csv_data.target, clf)
         
         for i in range(len(h_statistic)):
             for j in range(i + 1):
